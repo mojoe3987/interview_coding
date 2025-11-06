@@ -291,18 +291,6 @@ function setupEventListeners() {
     document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
     document.getElementById('reset-class-btn').addEventListener('click', resetClassData);
     
-    // Instructor code details modal
-    document.getElementById('close-instructor-code-details').addEventListener('click', () => {
-        document.getElementById('instructor-code-details-modal').style.display = 'none';
-    });
-    
-    // Close modal when clicking outside
-    document.getElementById('instructor-code-details-modal').addEventListener('click', (e) => {
-        if (e.target.id === 'instructor-code-details-modal') {
-            e.target.style.display = 'none';
-        }
-    });
-    
     // Text selection
     document.addEventListener('mouseup', handleTextSelection);
 }
@@ -350,34 +338,22 @@ function handleLogin() {
 }
 
 function loadTranscript(interviewId = null) {
-    try {
-        const interviewToLoad = interviewId || state.currentInterviewId;
-        const interview = INTERVIEWS.find(i => i.id === interviewToLoad);
-        
-        if (!interview) {
-            console.error('Interview not found:', interviewToLoad);
-            return;
-        }
-        
-        state.currentInterviewId = interviewToLoad;
-        
-        const transcriptContent = document.getElementById('transcript-content');
-        if (!transcriptContent) {
-            console.error('Transcript content element not found');
-            return;
-        }
-        
-        transcriptContent.innerHTML = interview.content;
-        
-        // Update interview selector
-        updateInterviewSelector();
-        
-        // Restore highlights for this interview
-        restoreHighlights();
-        updateProgress();
-    } catch (error) {
-        console.error('Error loading transcript:', error);
-    }
+    const interviewToLoad = interviewId || state.currentInterviewId;
+    const interview = INTERVIEWS.find(i => i.id === interviewToLoad);
+    
+    if (!interview) return;
+    
+    state.currentInterviewId = interviewToLoad;
+    
+    const transcriptContent = document.getElementById('transcript-content');
+    transcriptContent.innerHTML = interview.content;
+    
+    // Update interview selector
+    updateInterviewSelector();
+    
+    // Restore highlights for this interview
+    restoreHighlights();
+    updateProgress();
 }
 
 function updateInterviewSelector() {
@@ -404,89 +380,82 @@ function initializeInterviews() {
 let selectedCodesForPassage = new Set();
 
 function handleTextSelection() {
-    try {
-        const selection = window.getSelection();
-        if (!selection || selection.rangeCount === 0) return;
-        
-        const selectedText = selection.toString().trim();
-        
-        if (selectedText.length < 3) return;
-        
-        const range = selection.getRangeAt(0);
-        const container = document.getElementById('transcript-content');
-        
-        if (!container || !container.contains(range.commonAncestorContainer)) return;
-        
-        // Check if selection spans multiple paragraphs (speakers)
-        // This would break the HTML structure
-        const startParagraph = range.startContainer.nodeType === Node.TEXT_NODE 
-            ? range.startContainer.parentElement.closest('p')
-            : range.startContainer.closest('p');
-        const endParagraph = range.endContainer.nodeType === Node.TEXT_NODE
-            ? range.endContainer.parentElement.closest('p')
-            : range.endContainer.closest('p');
-        
-        if (!startParagraph || !endParagraph) {
-            window.getSelection().removeAllRanges();
-            return;
-        }
-        
-        if (startParagraph !== endParagraph) {
-            // Selection spans multiple paragraphs - not allowed
-            window.getSelection().removeAllRanges();
-            alert('Please select text within a single speaker\'s response. Selections cannot span across different speakers or paragraphs.');
-            return;
-        }
-        
-        // Check if selection includes speaker labels (Interviewer/Respondent/Alex/Clara)
-        // Reject selections that are entirely within a <strong> tag
-        let currentNode = range.startContainer;
-        let isInStrongTag = false;
-        
-        // Walk up the DOM tree to check if we're inside a <strong> tag
-        while (currentNode && currentNode !== startParagraph) {
-            if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === 'STRONG') {
-                isInStrongTag = true;
-                break;
-            }
-            currentNode = currentNode.parentNode;
-        }
-        
-        if (isInStrongTag) {
-            window.getSelection().removeAllRanges();
-            alert('Please select the actual response text, not the speaker label (Interviewer/Alex/Clara).');
-            return;
-        }
-        
-        // Also check if the selected text is mostly or entirely speaker label text
-        const selectedTextLower = selectedText.toLowerCase();
-        if (selectedTextLower.startsWith('interviewer:') || 
-            selectedTextLower.startsWith('alex:') || 
-            selectedTextLower.startsWith('clara:')) {
-            window.getSelection().removeAllRanges();
-            alert('Please select the actual response text, not the speaker label.');
-            return;
-        }
-        
-        // Store selection info
-        state.selectedText = {
-            text: selection.toString().trim(),
-            startOffset: range.startOffset,
-            startContainer: range.startContainer,
-            endOffset: range.endOffset,
-            endContainer: range.endContainer,
-            range: range.cloneRange()
-        };
-        
-        // Reset selected codes
-        selectedCodesForPassage = new Set();
-        
-        // Show code input modal
-        showCodeSelectionModal();
-    } catch (error) {
-        console.error('Error in handleTextSelection:', error);
-        // Don't break the app, just log the error
+    const selection = window.getSelection();
+    const selectedText = selection.toString().trim();
+    
+    if (selectedText.length < 3) return;
+    
+    const range = selection.getRangeAt(0);
+    const container = document.getElementById('transcript-content');
+    
+    if (!container.contains(range.commonAncestorContainer)) return;
+    
+    // Check if selection spans multiple paragraphs (speakers)
+    // This would break the HTML structure
+    const startParagraph = range.startContainer.nodeType === Node.TEXT_NODE 
+        ? range.startContainer.parentElement.closest('p')
+        : range.startContainer.closest('p');
+    const endParagraph = range.endContainer.nodeType === Node.TEXT_NODE
+        ? range.endContainer.parentElement.closest('p')
+        : range.endContainer.closest('p');
+    
+    if (!startParagraph || !endParagraph) {
+        window.getSelection().removeAllRanges();
+        return;
     }
+    
+    if (startParagraph !== endParagraph) {
+        // Selection spans multiple paragraphs - not allowed
+        window.getSelection().removeAllRanges();
+        alert('Please select text within a single speaker\'s response. Selections cannot span across different speakers or paragraphs.');
+        return;
+    }
+    
+    // Check if selection includes speaker labels (Interviewer/Respondent/Alex/Clara)
+    // Reject selections that are entirely within a <strong> tag
+    let currentNode = range.startContainer;
+    let isInStrongTag = false;
+    
+    // Walk up the DOM tree to check if we're inside a <strong> tag
+    while (currentNode && currentNode !== startParagraph) {
+        if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === 'STRONG') {
+            isInStrongTag = true;
+            break;
+        }
+        currentNode = currentNode.parentNode;
+    }
+    
+    if (isInStrongTag) {
+        window.getSelection().removeAllRanges();
+        alert('Please select the actual response text, not the speaker label (Interviewer/Alex/Clara).');
+        return;
+    }
+    
+    // Also check if the selected text is mostly or entirely speaker label text
+    const selectedTextLower = selectedText.toLowerCase();
+    if (selectedTextLower.startsWith('interviewer:') || 
+        selectedTextLower.startsWith('alex:') || 
+        selectedTextLower.startsWith('clara:')) {
+        window.getSelection().removeAllRanges();
+        alert('Please select the actual response text, not the speaker label.');
+        return;
+    }
+    
+    // Store selection info
+    state.selectedText = {
+        text: selection.toString().trim(),
+        startOffset: range.startOffset,
+        startContainer: range.startContainer,
+        endOffset: range.endOffset,
+        endContainer: range.endContainer,
+        range: range.cloneRange()
+    };
+    
+    // Reset selected codes
+    selectedCodesForPassage = new Set();
+    
+    // Show code input modal
+    showCodeSelectionModal();
 }
 
 function showCodeSelectionModal() {
@@ -1284,174 +1253,22 @@ async function loadInstructorData() {
         document.getElementById('instructor-avg-codes').textContent = 
             data.students.length > 0 ? Math.round(data.totalCodes / data.students.length) : 0;
         
-        // Render most common codes (clickable)
+        // Render most common codes
         const codesList = document.getElementById('instructor-codes-list');
-        if (data.topCodes && data.topCodes.length > 0) {
-            codesList.innerHTML = data.topCodes.map(code => `
-                <div class="instructor-list-item clickable-code-item" onclick="showInstructorCodeDetails('${escapeHtml(code.name)}', '${currentClassId}')">
-                    <div style="display: flex; align-items: center; gap: 0.5rem;">
-                        <div class="code-color-badge" style="background-color: ${code.color || '#3b82f6'}; width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;"></div>
-                        <strong>${escapeHtml(code.name)}</strong>
-                    </div>
-                    <span>${code.count} students</span>
-                </div>
-            `).join('');
-        } else {
-            codesList.innerHTML = '<p>No codes created yet.</p>';
-        }
+        codesList.innerHTML = data.topCodes.map(code => `
+            <div class="instructor-list-item">
+                <strong>${escapeHtml(code.name)}</strong>
+                <span>${code.count} students</span>
+            </div>
+        `).join('');
         
-        // Fetch and render most coded passages
-        try {
-            const passageResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(currentClassId)}`);
-            const passageData = await passageResponse.json();
-            renderInstructorTopPassages(passageData);
-        } catch (passageError) {
-            console.error('Error loading passage stats:', passageError);
-            document.getElementById('instructor-top-passages').innerHTML = '<p>Unable to load passage statistics.</p>';
-        }
+        // Render disagreements (simplified)
+        const disagreements = document.getElementById('instructor-disagreements');
+        disagreements.innerHTML = '<p>Feature coming soon - analyzing passage disagreements...</p>';
         
     } catch (error) {
         console.error('Error loading instructor data:', error);
         alert('Unable to load instructor data. Make sure the backend is running.');
-    }
-}
-
-function renderInstructorTopPassages(passageStats) {
-    const container = document.getElementById('instructor-top-passages');
-    if (!container) return;
-    
-    const passages = (passageStats.passages || []).slice(0, 10);
-    
-    if (passages.length === 0) {
-        container.innerHTML = '<p>No passage statistics available yet.</p>';
-        return;
-    }
-    
-    const maxStudents = Math.max(...passages.map(p => p.students), 1);
-    
-    container.innerHTML = passages.map((passage, index) => `
-        <div class="instructor-passage-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                <div style="font-weight: 600; color: #1f2937;">
-                    ${escapeHtml(passage.interviewId || 'Unknown Interview')}
-                </div>
-                <div style="font-size: 0.875rem; color: #6b7280;">
-                    ${passage.students} student${passage.students !== 1 ? 's' : ''}
-                </div>
-            </div>
-            <div style="margin-bottom: 0.75rem; line-height: 1.6; color: #374151;">
-                "${escapeHtml(passage.text.length > 200 ? passage.text.substring(0, 200) + '...' : passage.text)}"
-            </div>
-            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
-                ${passage.codes && passage.codes.length > 0 
-                    ? passage.codes.map(c => `
-                        <span style="display: inline-block; padding: 0.25rem 0.5rem; background: #e5e7eb; border-radius: 4px; font-size: 0.875rem; color: #374151;">
-                            ${escapeHtml(c.name)} (${c.count})
-                        </span>
-                    `).join('')
-                    : '<span style="font-size: 0.875rem; color: #6b7280;">No codes assigned</span>'
-                }
-            </div>
-        </div>
-    `).join('');
-}
-
-// Make function globally accessible for onclick handlers
-window.showInstructorCodeDetails = async function(codeName, classId) {
-    const modal = document.getElementById('instructor-code-details-modal');
-    const title = document.getElementById('instructor-code-details-title');
-    const content = document.getElementById('instructor-code-details-content');
-    
-    // Check if modal elements exist
-    if (!modal || !title || !content) {
-        console.error('Modal elements not found');
-        alert('Unable to load code details. Please refresh the page.');
-        return;
-    }
-    
-    // Show modal immediately with loading state
-    title.textContent = `Code: ${escapeHtml(codeName)}`;
-    content.innerHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">Loading...</div>';
-    modal.style.display = 'flex';
-    
-    try {
-        // Fetch all highlights for this specific code (same data source as CSV export)
-        const response = await fetch(`${API_BASE}/api/code-highlights?classId=${encodeURIComponent(classId)}&codeName=${encodeURIComponent(codeName)}`);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        
-        const data = await response.json();
-        const highlights = data.highlights || [];
-        
-        if (highlights.length > 0) {
-            // Group highlights by interview and student for better display
-            const grouped = {};
-            highlights.forEach(h => {
-                const key = `${h.interviewId || 'interview1'}_${h.studentName}`;
-                if (!grouped[key]) {
-                    grouped[key] = {
-                        interviewId: h.interviewId || 'interview1',
-                        studentName: h.studentName,
-                        highlights: []
-                    };
-                }
-                grouped[key].highlights.push(h);
-            });
-            
-            const groups = Object.values(grouped);
-            const uniqueStudents = new Set(highlights.map(h => h.studentName));
-            const uniqueInterviews = new Set(highlights.map(h => h.interviewId || 'interview1'));
-            
-            content.innerHTML = `
-                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #eff6ff; border-radius: 6px; color: #1e40af;">
-                    <strong>Found ${highlights.length} highlight${highlights.length !== 1 ? 's' : ''} from ${uniqueStudents.size} student${uniqueStudents.size !== 1 ? 's' : ''} across ${uniqueInterviews.size} interview${uniqueInterviews.size !== 1 ? 's' : ''}</strong>
-                </div>
-                <div style="max-height: 60vh; overflow-y: auto;">
-                    ${groups.map((group, index) => `
-                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid ${group.highlights[0]?.codeColor || '#3b82f6'};">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
-                                <div>
-                                    <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.25rem;">
-                                        ${escapeHtml(group.interviewId)}
-                                    </div>
-                                    <div style="font-size: 0.875rem; color: #6b7280;">
-                                        Student: ${escapeHtml(group.studentName)}
-                                    </div>
-                                </div>
-                                <div style="font-size: 0.875rem; color: #6b7280;">
-                                    ${group.highlights.length} highlight${group.highlights.length !== 1 ? 's' : ''}
-                                </div>
-                            </div>
-                            ${group.highlights.map(h => `
-                                <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 4px; border-left: 3px solid ${h.codeColor || '#3b82f6'};">
-                                    <div style="line-height: 1.6; color: #374151;">
-                                        "${escapeHtml(h.text)}"
-                                    </div>
-                                </div>
-                            `).join('')}
-                        </div>
-                    `).join('')}
-                </div>
-            `;
-        } else {
-            content.innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: #6b7280;">
-                    <p>No highlights found for code "${escapeHtml(codeName)}"</p>
-                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">This code has been created but not yet applied to any passages.</p>
-                </div>
-            `;
-        }
-    } catch (error) {
-        console.error('Error loading code details:', error);
-        content.innerHTML = `
-            <div style="padding: 2rem; text-align: center; color: #dc2626;">
-                <p>Unable to load code details.</p>
-                <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #6b7280;">Error: ${error.message || 'Unknown error'}</p>
-                <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #6b7280;">Please check your connection and try again.</p>
-            </div>
-        `;
     }
 }
 

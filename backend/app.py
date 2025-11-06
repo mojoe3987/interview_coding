@@ -255,30 +255,23 @@ def get_instructor_data():
         conn = get_db()
         cursor = conn.cursor()
         
-        # Get all students in this class - same as CSV export
+        # Get all students in this class
         cursor.execute('SELECT DISTINCT name FROM students WHERE class_id = ?', (class_id,))
         students = [row[0] for row in cursor.fetchall()]
         
-        # Get total codes - use EXACT same pattern as CSV export (LEFT JOIN from students)
-        cursor.execute('''
-            SELECT COUNT(DISTINCT c.id) as count
-            FROM students s
-            LEFT JOIN codes c ON s.name = c.student_name AND s.class_id = c.class_id
-            WHERE s.class_id = ? AND c.id IS NOT NULL
-        ''', (class_id,))
-        total_codes_result = cursor.fetchone()
-        total_codes = total_codes_result['count'] if total_codes_result else 0
+        # Get total codes for this class
+        cursor.execute('SELECT COUNT(*) as count FROM codes WHERE class_id = ?', (class_id,))
+        total_codes = cursor.fetchone()['count']
         
-        # Get top codes - use EXACT same pattern as CSV export (LEFT JOIN from students)
+        # Get top codes for this class
         cursor.execute('''
             SELECT 
-                c.code_name as name,
-                c.code_color as color,
-                COUNT(DISTINCT c.student_name) as count
-            FROM students s
-            LEFT JOIN codes c ON s.name = c.student_name AND s.class_id = c.class_id
-            WHERE s.class_id = ? AND c.id IS NOT NULL
-            GROUP BY c.code_name, c.code_color
+                code_name as name,
+                code_color as color,
+                COUNT(DISTINCT student_name) as count
+            FROM codes
+            WHERE class_id = ?
+            GROUP BY code_name, code_color
             ORDER BY count DESC
             LIMIT 20
         ''', (class_id,))
@@ -301,66 +294,7 @@ def get_instructor_data():
     
     except Exception as e:
         print(f'Error fetching instructor data: {e}')
-        import traceback
-        traceback.print_exc()
         return jsonify({'error': 'Failed to fetch instructor data'}), 500
-
-@app.route('/api/code-highlights', methods=['GET'])
-def get_code_highlights():
-    """Get all highlights for a specific code in a class"""
-    try:
-        class_id = request.args.get('classId')
-        code_name = request.args.get('codeName')
-        
-        if not class_id or not code_name:
-            return jsonify({'error': 'Class ID and code name required'}), 400
-        
-        conn = get_db()
-        cursor = conn.cursor()
-        
-        # Get all highlights for this code in this class
-        cursor.execute('''
-            SELECT 
-                h.id,
-                h.student_name,
-                h.interview_id,
-                h.text_content,
-                h.start_offset,
-                h.end_offset,
-                h.abs_start_offset,
-                h.abs_end_offset,
-                c.code_name,
-                c.code_color
-            FROM highlights h
-            JOIN codes c ON h.code_id = c.id
-            WHERE h.class_id = ? AND c.code_name = ?
-            ORDER BY h.student_name, h.interview_id, h.start_offset
-        ''', (class_id, code_name))
-        
-        highlights = []
-        for row in cursor.fetchall():
-            highlights.append({
-                'studentName': row['student_name'],
-                'interviewId': row['interview_id'] or 'interview1',
-                'text': row['text_content'],
-                'startOffset': row['start_offset'],
-                'endOffset': row['end_offset'],
-                'absStartOffset': row['abs_start_offset'],
-                'absEndOffset': row['abs_end_offset'],
-                'codeName': row['code_name'],
-                'codeColor': row['code_color']
-            })
-        
-        conn.close()
-        
-        return jsonify({
-            'codeName': code_name,
-            'highlights': highlights
-        })
-    
-    except Exception as e:
-        print(f'Error fetching code highlights: {e}')
-        return jsonify({'error': 'Failed to fetch code highlights'}), 500
 
 @app.route('/api/export-csv', methods=['GET'])
 def export_csv():
