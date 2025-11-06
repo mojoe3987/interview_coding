@@ -339,9 +339,60 @@ function handleTextSelection() {
     
     if (!container.contains(range.commonAncestorContainer)) return;
     
+    // Check if selection spans multiple paragraphs (speakers)
+    // This would break the HTML structure
+    const startParagraph = range.startContainer.nodeType === Node.TEXT_NODE 
+        ? range.startContainer.parentElement.closest('p')
+        : range.startContainer.closest('p');
+    const endParagraph = range.endContainer.nodeType === Node.TEXT_NODE
+        ? range.endContainer.parentElement.closest('p')
+        : range.endContainer.closest('p');
+    
+    if (!startParagraph || !endParagraph) {
+        window.getSelection().removeAllRanges();
+        return;
+    }
+    
+    if (startParagraph !== endParagraph) {
+        // Selection spans multiple paragraphs - not allowed
+        window.getSelection().removeAllRanges();
+        alert('Please select text within a single speaker\'s response. Selections cannot span across different speakers or paragraphs.');
+        return;
+    }
+    
+    // Check if selection includes speaker labels (Interviewer/Respondent/Alex/Clara)
+    // Reject selections that are entirely within a <strong> tag
+    let currentNode = range.startContainer;
+    let isInStrongTag = false;
+    
+    // Walk up the DOM tree to check if we're inside a <strong> tag
+    while (currentNode && currentNode !== startParagraph) {
+        if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === 'STRONG') {
+            isInStrongTag = true;
+            break;
+        }
+        currentNode = currentNode.parentNode;
+    }
+    
+    if (isInStrongTag) {
+        window.getSelection().removeAllRanges();
+        alert('Please select the actual response text, not the speaker label (Interviewer/Alex/Clara).');
+        return;
+    }
+    
+    // Also check if the selected text is mostly or entirely speaker label text
+    const selectedTextLower = selectedText.toLowerCase();
+    if (selectedTextLower.startsWith('interviewer:') || 
+        selectedTextLower.startsWith('alex:') || 
+        selectedTextLower.startsWith('clara:')) {
+        window.getSelection().removeAllRanges();
+        alert('Please select the actual response text, not the speaker label.');
+        return;
+    }
+    
     // Store selection info
     state.selectedText = {
-        text: selectedText,
+        text: selection.toString().trim(),
         startOffset: range.startOffset,
         startContainer: range.startContainer,
         endOffset: range.endOffset,
