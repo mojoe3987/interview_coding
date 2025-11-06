@@ -1,0 +1,14 @@
+node_modules/
+backend/node_modules/
+backend/coding_data.db
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.Python
+venv/
+env/
+ENV/
+.DS_Store
+*.log
+

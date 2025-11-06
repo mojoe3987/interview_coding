@@ -1,0 +1,205 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Qualitative Coding Comparison Tool</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+</head>
+<body>
+    <!-- Tutorial Overlay -->
+    <div id="tutorial-overlay" class="overlay">
+        <div class="tutorial-content">
+            <h2>Welcome to the Coding Comparison Tool</h2>
+            <div class="tutorial-steps">
+                <p><strong>Step 1:</strong> Enter your name or student ID</p>
+                <p><strong>Step 2:</strong> Select an interview from the dropdown</p>
+                <p><strong>Step 3:</strong> Read the transcript and highlight text to assign codes/themes</p>
+                <p><strong>Step 4:</strong> Switch between interviews - codes are shared (vertical coding)</p>
+                <p><strong>Step 5:</strong> Review your codes in the right panel</p>
+                <p><strong>Step 6:</strong> Compare with your classmates</p>
+            </div>
+            <button id="close-tutorial" class="btn-primary">Get Started</button>
+        </div>
+    </div>
+
+    <!-- Login Screen -->
+    <div id="login-screen" class="login-container">
+        <div class="login-box">
+            <h1>Qualitative Coding Comparison Tool</h1>
+            <div class="logo-placeholder">emlyon</div>
+            <input type="text" id="student-name" placeholder="Enter your name or student ID" class="input-field">
+            <select id="class-select" class="input-field">
+                <option value="class1">Class 1</option>
+                <option value="class2">Class 2</option>
+            </select>
+            <select id="role-select" class="input-field">
+                <option value="student">Student</option>
+                <option value="instructor">Instructor</option>
+            </select>
+            <input type="password" id="instructor-password" placeholder="Instructor password" class="input-field" style="display: none;">
+            <button id="start-btn" class="btn-primary">Start Coding</button>
+        </div>
+    </div>
+
+    <!-- Main Application -->
+    <div id="main-app" style="display: none;">
+        <!-- Header -->
+        <header class="app-header">
+            <div class="header-left">
+                <h1>Qualitative Coding Tool</h1>
+                <span id="student-display" class="student-info"></span>
+            </div>
+            <div class="header-right">
+                <button id="compare-btn" class="btn-secondary">Compare with Class</button>
+                <button id="reset-btn" class="btn-danger">Reset</button>
+                <button id="export-btn" class="btn-secondary">Export My Coding</button>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <div class="main-content">
+            <!-- Left Panel: Transcript -->
+            <div class="transcript-panel">
+                <div class="panel-header">
+                    <div class="header-left-group">
+                        <h2>Interview Transcript</h2>
+                        <select id="interview-selector" class="interview-selector"></select>
+                    </div>
+                    <div class="progress-indicator">
+                        <span>Coded: <span id="progress-percentage">0%</span></span>
+                        <span id="overall-progress" class="overall-progress"></span>
+                    </div>
+                </div>
+                <div id="transcript-content" class="transcript-text"></div>
+            </div>
+
+            <!-- Right Panel: Coding -->
+            <div class="coding-panel">
+                <div class="panel-header">
+                    <h2>Your Codes</h2>
+                    <button id="view-all-btn" class="btn-small">View All</button>
+                </div>
+                <div id="codes-list" class="codes-list"></div>
+                <div id="code-details" class="code-details" style="display: none;">
+                    <h3 id="code-details-title"></h3>
+                    <div id="code-segments"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Comparison Modal -->
+        <div id="comparison-modal" class="modal">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h2>Class Comparison</h2>
+                    <button id="close-comparison" class="btn-close">&times;</button>
+                </div>
+                <div class="comparison-content">
+                    <div class="comparison-stats">
+                        <div class="stat-box">
+                            <h3>Overlap with Class</h3>
+                            <div id="overlap-percentage" class="stat-value">0%</div>
+                        </div>
+                        <div class="stat-box">
+                            <h3>Students Completed</h3>
+                            <div id="students-count" class="stat-value">0</div>
+                        </div>
+                    </div>
+                    <div class="comparison-charts">
+                        <div class="chart-container">
+                            <h3>Most Common Codes</h3>
+                            <div id="codes-chart" class="chart"></div>
+                        </div>
+                        <div class="chart-container">
+                            <h3>Most Coded Passages</h3>
+                            <div id="top-passages" class="chart"></div>
+                        </div>
+                    </div>
+                    <div class="heatmap-info">
+                        <p>Heat map overlay shows frequently coded passages (darker = more students coded it)</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Code Input Modal -->
+    <div id="code-input-modal" class="modal">
+        <div class="modal-content small-modal">
+            <h3>Code this passage</h3>
+            <p class="modal-hint">Select existing codes or add a new one. You can assign multiple codes to this passage.</p>
+            
+            <div class="code-selection-section">
+                <label>Existing Codes:</label>
+                <div id="existing-codes-list" class="existing-codes-list"></div>
+            </div>
+            
+            <div class="code-selection-section">
+                <label>Or Add New Code:</label>
+                <input type="text" id="code-input" placeholder="Enter new code name" class="input-field">
+                <button id="add-new-code-btn" class="btn-small" style="margin-top: 0.5rem;">Add New Code</button>
+            </div>
+            
+            <div id="selected-codes-preview" class="selected-codes-preview"></div>
+            
+            <div class="modal-actions">
+                <button id="save-code-btn" class="btn-primary">Assign Selected Codes</button>
+                <button id="cancel-code-btn" class="btn-secondary">Cancel</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Instructor View -->
+    <div id="instructor-view" style="display: none;">
+        <header class="app-header">
+            <div class="header-left">
+                <h1>Instructor Dashboard</h1>
+                <select id="instructor-class-select" class="input-field" style="width: auto; margin-left: 1rem;">
+                    <option value="class1">Class 1</option>
+                    <option value="class2">Class 2</option>
+                </select>
+            </div>
+            <div class="header-right">
+                <button id="back-to-student" class="btn-secondary">Back to Student View</button>
+            </div>
+        </header>
+        <div class="instructor-content">
+            <div class="instructor-stats">
+                <div class="stat-card">
+                    <h3>Students Completed</h3>
+                    <div id="instructor-students-count" class="stat-number">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Total Codes Created</h3>
+                    <div id="instructor-total-codes" class="stat-number">0</div>
+                </div>
+                <div class="stat-card">
+                    <h3>Average Codes per Student</h3>
+                    <div id="instructor-avg-codes" class="stat-number">0</div>
+                </div>
+            </div>
+            <div class="instructor-sections">
+                <div class="instructor-section">
+                    <h2>Most Common Themes</h2>
+                    <div id="instructor-codes-list" class="instructor-list"></div>
+                </div>
+                <div class="instructor-section">
+                    <h2>High Disagreement Passages</h2>
+                    <div id="instructor-disagreements" class="instructor-list"></div>
+                </div>
+            </div>
+            <div class="instructor-actions">
+                <button id="export-csv-btn" class="btn-primary">Export All Data as CSV</button>
+                <button id="reset-class-btn" class="btn-danger">Reset Class Data</button>
+            </div>
+        </div>
+    </div>
+
+    <script src="app.js"></script>
+</body>
+</html>
+
