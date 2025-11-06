@@ -161,6 +161,54 @@ const CODE_COLORS = [
 
 let colorIndex = 0;
 
+// Initialize color index based on existing codes
+function initializeColorIndex() {
+    if (state.codes.length === 0) {
+        colorIndex = 0;
+        return;
+    }
+    
+    // Find the highest color index used
+    const usedColors = new Set(state.codes.map(c => c.color));
+    let maxIndex = -1;
+    
+    for (let i = 0; i < CODE_COLORS.length; i++) {
+        if (usedColors.has(CODE_COLORS[i])) {
+            maxIndex = i;
+        }
+    }
+    
+    // Start from the next available color
+    colorIndex = (maxIndex + 1) % CODE_COLORS.length;
+    
+    // If all colors are used, find the first unused one
+    if (usedColors.size >= CODE_COLORS.length) {
+        // All colors used, just cycle through
+        colorIndex = state.codes.length % CODE_COLORS.length;
+    } else {
+        // Find first unused color
+        for (let i = 0; i < CODE_COLORS.length; i++) {
+            if (!usedColors.has(CODE_COLORS[i])) {
+                colorIndex = i;
+                break;
+            }
+        }
+    }
+}
+
+// Ensure all codes have colors assigned
+function ensureCodeColors() {
+    state.codes.forEach(code => {
+        if (!code.color) {
+            // Assign a color if missing
+            code.color = CODE_COLORS[colorIndex % CODE_COLORS.length];
+            colorIndex++;
+        }
+    });
+    // Re-initialize color index after assigning missing colors
+    initializeColorIndex();
+}
+
 // Initialize app
 document.addEventListener('DOMContentLoaded', () => {
     initializeApp();
@@ -276,6 +324,9 @@ function handleLogin() {
         document.getElementById('login-screen').style.display = 'none';
         document.getElementById('main-app').style.display = 'block';
         document.getElementById('student-display').textContent = `Student: ${name} (${CLASSES.find(c => c.id === classId)?.name || classId})`;
+        // Ensure codes have colors and initialize color index
+        ensureCodeColors();
+        initializeColorIndex();
         loadTranscript(state.currentInterviewId);
         renderCodes();
     }
@@ -499,14 +550,32 @@ function addNewCodeToList() {
         return;
     }
     
-    // Create new code
+    // Create new code with next available color
+    // First, find which colors are already used
+    const usedColors = new Set(state.codes.map(c => c.color));
+    let assignedColor = null;
+    
+    // Try to find an unused color first
+    for (let i = 0; i < CODE_COLORS.length; i++) {
+        if (!usedColors.has(CODE_COLORS[i])) {
+            assignedColor = CODE_COLORS[i];
+            colorIndex = i + 1;
+            break;
+        }
+    }
+    
+    // If all colors are used, cycle through
+    if (!assignedColor) {
+        assignedColor = CODE_COLORS[colorIndex % CODE_COLORS.length];
+        colorIndex++;
+    }
+    
     const newCode = {
         id: Date.now(),
         name: codeName,
-        color: CODE_COLORS[colorIndex % CODE_COLORS.length],
+        color: assignedColor,
         segments: []
     };
-    colorIndex++;
     state.codes.push(newCode);
     selectedCodesForPassage.add(newCode.id);
     
@@ -1273,6 +1342,11 @@ function loadSavedData() {
         try {
             const data = JSON.parse(saved);
             state.codes = data.codes || [];
+            
+            // Ensure all codes have colors assigned
+            ensureCodeColors();
+            // Initialize color index for future codes
+            initializeColorIndex();
             
             // Handle migration from old format (array) to new format (object)
             if (Array.isArray(data.highlights)) {
