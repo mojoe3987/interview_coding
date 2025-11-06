@@ -350,22 +350,34 @@ function handleLogin() {
 }
 
 function loadTranscript(interviewId = null) {
-    const interviewToLoad = interviewId || state.currentInterviewId;
-    const interview = INTERVIEWS.find(i => i.id === interviewToLoad);
-    
-    if (!interview) return;
-    
-    state.currentInterviewId = interviewToLoad;
-    
-    const transcriptContent = document.getElementById('transcript-content');
-    transcriptContent.innerHTML = interview.content;
-    
-    // Update interview selector
-    updateInterviewSelector();
-    
-    // Restore highlights for this interview
-    restoreHighlights();
-    updateProgress();
+    try {
+        const interviewToLoad = interviewId || state.currentInterviewId;
+        const interview = INTERVIEWS.find(i => i.id === interviewToLoad);
+        
+        if (!interview) {
+            console.error('Interview not found:', interviewToLoad);
+            return;
+        }
+        
+        state.currentInterviewId = interviewToLoad;
+        
+        const transcriptContent = document.getElementById('transcript-content');
+        if (!transcriptContent) {
+            console.error('Transcript content element not found');
+            return;
+        }
+        
+        transcriptContent.innerHTML = interview.content;
+        
+        // Update interview selector
+        updateInterviewSelector();
+        
+        // Restore highlights for this interview
+        restoreHighlights();
+        updateProgress();
+    } catch (error) {
+        console.error('Error loading transcript:', error);
+    }
 }
 
 function updateInterviewSelector() {
@@ -392,82 +404,89 @@ function initializeInterviews() {
 let selectedCodesForPassage = new Set();
 
 function handleTextSelection() {
-    const selection = window.getSelection();
-    const selectedText = selection.toString().trim();
-    
-    if (selectedText.length < 3) return;
-    
-    const range = selection.getRangeAt(0);
-    const container = document.getElementById('transcript-content');
-    
-    if (!container.contains(range.commonAncestorContainer)) return;
-    
-    // Check if selection spans multiple paragraphs (speakers)
-    // This would break the HTML structure
-    const startParagraph = range.startContainer.nodeType === Node.TEXT_NODE 
-        ? range.startContainer.parentElement.closest('p')
-        : range.startContainer.closest('p');
-    const endParagraph = range.endContainer.nodeType === Node.TEXT_NODE
-        ? range.endContainer.parentElement.closest('p')
-        : range.endContainer.closest('p');
-    
-    if (!startParagraph || !endParagraph) {
-        window.getSelection().removeAllRanges();
-        return;
-    }
-    
-    if (startParagraph !== endParagraph) {
-        // Selection spans multiple paragraphs - not allowed
-        window.getSelection().removeAllRanges();
-        alert('Please select text within a single speaker\'s response. Selections cannot span across different speakers or paragraphs.');
-        return;
-    }
-    
-    // Check if selection includes speaker labels (Interviewer/Respondent/Alex/Clara)
-    // Reject selections that are entirely within a <strong> tag
-    let currentNode = range.startContainer;
-    let isInStrongTag = false;
-    
-    // Walk up the DOM tree to check if we're inside a <strong> tag
-    while (currentNode && currentNode !== startParagraph) {
-        if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === 'STRONG') {
-            isInStrongTag = true;
-            break;
+    try {
+        const selection = window.getSelection();
+        if (!selection || selection.rangeCount === 0) return;
+        
+        const selectedText = selection.toString().trim();
+        
+        if (selectedText.length < 3) return;
+        
+        const range = selection.getRangeAt(0);
+        const container = document.getElementById('transcript-content');
+        
+        if (!container || !container.contains(range.commonAncestorContainer)) return;
+        
+        // Check if selection spans multiple paragraphs (speakers)
+        // This would break the HTML structure
+        const startParagraph = range.startContainer.nodeType === Node.TEXT_NODE 
+            ? range.startContainer.parentElement.closest('p')
+            : range.startContainer.closest('p');
+        const endParagraph = range.endContainer.nodeType === Node.TEXT_NODE
+            ? range.endContainer.parentElement.closest('p')
+            : range.endContainer.closest('p');
+        
+        if (!startParagraph || !endParagraph) {
+            window.getSelection().removeAllRanges();
+            return;
         }
-        currentNode = currentNode.parentNode;
+        
+        if (startParagraph !== endParagraph) {
+            // Selection spans multiple paragraphs - not allowed
+            window.getSelection().removeAllRanges();
+            alert('Please select text within a single speaker\'s response. Selections cannot span across different speakers or paragraphs.');
+            return;
+        }
+        
+        // Check if selection includes speaker labels (Interviewer/Respondent/Alex/Clara)
+        // Reject selections that are entirely within a <strong> tag
+        let currentNode = range.startContainer;
+        let isInStrongTag = false;
+        
+        // Walk up the DOM tree to check if we're inside a <strong> tag
+        while (currentNode && currentNode !== startParagraph) {
+            if (currentNode.nodeType === Node.ELEMENT_NODE && currentNode.tagName === 'STRONG') {
+                isInStrongTag = true;
+                break;
+            }
+            currentNode = currentNode.parentNode;
+        }
+        
+        if (isInStrongTag) {
+            window.getSelection().removeAllRanges();
+            alert('Please select the actual response text, not the speaker label (Interviewer/Alex/Clara).');
+            return;
+        }
+        
+        // Also check if the selected text is mostly or entirely speaker label text
+        const selectedTextLower = selectedText.toLowerCase();
+        if (selectedTextLower.startsWith('interviewer:') || 
+            selectedTextLower.startsWith('alex:') || 
+            selectedTextLower.startsWith('clara:')) {
+            window.getSelection().removeAllRanges();
+            alert('Please select the actual response text, not the speaker label.');
+            return;
+        }
+        
+        // Store selection info
+        state.selectedText = {
+            text: selection.toString().trim(),
+            startOffset: range.startOffset,
+            startContainer: range.startContainer,
+            endOffset: range.endOffset,
+            endContainer: range.endContainer,
+            range: range.cloneRange()
+        };
+        
+        // Reset selected codes
+        selectedCodesForPassage = new Set();
+        
+        // Show code input modal
+        showCodeSelectionModal();
+    } catch (error) {
+        console.error('Error in handleTextSelection:', error);
+        // Don't break the app, just log the error
     }
-    
-    if (isInStrongTag) {
-        window.getSelection().removeAllRanges();
-        alert('Please select the actual response text, not the speaker label (Interviewer/Alex/Clara).');
-        return;
-    }
-    
-    // Also check if the selected text is mostly or entirely speaker label text
-    const selectedTextLower = selectedText.toLowerCase();
-    if (selectedTextLower.startsWith('interviewer:') || 
-        selectedTextLower.startsWith('alex:') || 
-        selectedTextLower.startsWith('clara:')) {
-        window.getSelection().removeAllRanges();
-        alert('Please select the actual response text, not the speaker label.');
-        return;
-    }
-    
-    // Store selection info
-    state.selectedText = {
-        text: selection.toString().trim(),
-        startOffset: range.startOffset,
-        startContainer: range.startContainer,
-        endOffset: range.endOffset,
-        endContainer: range.endContainer,
-        range: range.cloneRange()
-    };
-    
-    // Reset selected codes
-    selectedCodesForPassage = new Set();
-    
-    // Show code input modal
-    showCodeSelectionModal();
 }
 
 function showCodeSelectionModal() {
