@@ -296,6 +296,63 @@ def get_instructor_data():
         print(f'Error fetching instructor data: {e}')
         return jsonify({'error': 'Failed to fetch instructor data'}), 500
 
+@app.route('/api/code-highlights', methods=['GET'])
+def get_code_highlights():
+    """Get all highlights for a specific code in a class"""
+    try:
+        class_id = request.args.get('classId')
+        code_name = request.args.get('codeName')
+        
+        if not class_id or not code_name:
+            return jsonify({'error': 'Class ID and code name required'}), 400
+        
+        conn = get_db()
+        cursor = conn.cursor()
+        
+        # Get all highlights for this code in this class
+        cursor.execute('''
+            SELECT 
+                h.id,
+                h.student_name,
+                h.interview_id,
+                h.text_content,
+                h.start_offset,
+                h.end_offset,
+                h.abs_start_offset,
+                h.abs_end_offset,
+                c.code_name,
+                c.code_color
+            FROM highlights h
+            JOIN codes c ON h.code_id = c.id
+            WHERE h.class_id = ? AND c.code_name = ?
+            ORDER BY h.student_name, h.interview_id, h.start_offset
+        ''', (class_id, code_name))
+        
+        highlights = []
+        for row in cursor.fetchall():
+            highlights.append({
+                'studentName': row['student_name'],
+                'interviewId': row['interview_id'] or 'interview1',
+                'text': row['text_content'],
+                'startOffset': row['start_offset'],
+                'endOffset': row['end_offset'],
+                'absStartOffset': row['abs_start_offset'],
+                'absEndOffset': row['abs_end_offset'],
+                'codeName': row['code_name'],
+                'codeColor': row['code_color']
+            })
+        
+        conn.close()
+        
+        return jsonify({
+            'codeName': code_name,
+            'highlights': highlights
+        })
+    
+    except Exception as e:
+        print(f'Error fetching code highlights: {e}')
+        return jsonify({'error': 'Failed to fetch code highlights'}), 500
+
 @app.route('/api/export-csv', methods=['GET'])
 def export_csv():
     """Export all coding data as CSV"""

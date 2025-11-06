@@ -1339,80 +1339,100 @@ function renderInstructorTopPassages(passageStats) {
 
 // Make function globally accessible for onclick handlers
 window.showInstructorCodeDetails = async function(codeName, classId) {
+    const modal = document.getElementById('instructor-code-details-modal');
+    const title = document.getElementById('instructor-code-details-title');
+    const content = document.getElementById('instructor-code-details-content');
+    
+    // Check if modal elements exist
+    if (!modal || !title || !content) {
+        console.error('Modal elements not found');
+        alert('Unable to load code details. Please refresh the page.');
+        return;
+    }
+    
+    // Show modal immediately with loading state
+    title.textContent = `Code: ${escapeHtml(codeName)}`;
+    content.innerHTML = '<div style="padding: 2rem; text-align: center; color: #6b7280;">Loading...</div>';
+    modal.style.display = 'flex';
+    
     try {
-        // Fetch all highlights for this code
-        const response = await fetch(`${API_BASE}/api/instructor-data?classId=${encodeURIComponent(classId)}`);
+        // Fetch all highlights for this specific code (same data source as CSV export)
+        const response = await fetch(`${API_BASE}/api/code-highlights?classId=${encodeURIComponent(classId)}&codeName=${encodeURIComponent(codeName)}`);
+        
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        
         const data = await response.json();
+        const highlights = data.highlights || [];
         
-        // Find all highlights with this code name
-        // We need to get the full data including highlights
-        const codeHighlights = [];
-        
-        // The API might not return highlights directly, so we'll need to fetch them
-        // For now, let's show what we can from the class data
-        const modal = document.getElementById('instructor-code-details-modal');
-        const title = document.getElementById('instructor-code-details-title');
-        const content = document.getElementById('instructor-code-details-content');
-        
-        title.textContent = `Code: ${escapeHtml(codeName)}`;
-        
-        // Try to get passage stats filtered by code
-        try {
-            const passageResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(classId)}`);
-            const passageData = await passageResponse.json();
+        if (highlights.length > 0) {
+            // Group highlights by interview and student for better display
+            const grouped = {};
+            highlights.forEach(h => {
+                const key = `${h.interviewId || 'interview1'}_${h.studentName}`;
+                if (!grouped[key]) {
+                    grouped[key] = {
+                        interviewId: h.interviewId || 'interview1',
+                        studentName: h.studentName,
+                        highlights: []
+                    };
+                }
+                grouped[key].highlights.push(h);
+            });
             
-            // Filter passages that include this code
-            const relevantPassages = (passageData.passages || []).filter(p => 
-                p.codes && p.codes.some(c => c.name.toLowerCase() === codeName.toLowerCase())
-            );
+            const groups = Object.values(grouped);
+            const uniqueStudents = new Set(highlights.map(h => h.studentName));
+            const uniqueInterviews = new Set(highlights.map(h => h.interviewId || 'interview1'));
             
-            if (relevantPassages.length > 0) {
-                content.innerHTML = `
-                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: #eff6ff; border-radius: 6px; color: #1e40af;">
-                        <strong>Found ${relevantPassages.length} passage${relevantPassages.length !== 1 ? 's' : ''} coded with "${escapeHtml(codeName)}"</strong>
-                    </div>
-                    <div style="max-height: 60vh; overflow-y: auto;">
-                        ${relevantPassages.map((passage, index) => `
-                            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
-                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
-                                    <div style="font-weight: 600; color: #1f2937;">
-                                        ${escapeHtml(passage.interviewId || 'Unknown Interview')}
+            content.innerHTML = `
+                <div style="margin-bottom: 1rem; padding: 0.75rem; background: #eff6ff; border-radius: 6px; color: #1e40af;">
+                    <strong>Found ${highlights.length} highlight${highlights.length !== 1 ? 's' : ''} from ${uniqueStudents.size} student${uniqueStudents.size !== 1 ? 's' : ''} across ${uniqueInterviews.size} interview${uniqueInterviews.size !== 1 ? 's' : ''}</strong>
+                </div>
+                <div style="max-height: 60vh; overflow-y: auto;">
+                    ${groups.map((group, index) => `
+                        <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid ${group.highlights[0]?.codeColor || '#3b82f6'};">
+                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.75rem;">
+                                <div>
+                                    <div style="font-weight: 600; color: #1f2937; margin-bottom: 0.25rem;">
+                                        ${escapeHtml(group.interviewId)}
                                     </div>
                                     <div style="font-size: 0.875rem; color: #6b7280;">
-                                        ${passage.students} student${passage.students !== 1 ? 's' : ''} coded this
+                                        Student: ${escapeHtml(group.studentName)}
                                     </div>
                                 </div>
-                                <div style="margin-bottom: 0.75rem; line-height: 1.6; color: #374151; padding: 0.75rem; background: white; border-radius: 4px;">
-                                    "${escapeHtml(passage.text)}"
-                                </div>
                                 <div style="font-size: 0.875rem; color: #6b7280;">
-                                    Other codes on this passage: 
-                                    ${passage.codes.filter(c => c.name.toLowerCase() !== codeName.toLowerCase()).map(c => escapeHtml(c.name)).join(', ') || 'None'}
+                                    ${group.highlights.length} highlight${group.highlights.length !== 1 ? 's' : ''}
                                 </div>
                             </div>
-                        `).join('')}
-                    </div>
-                `;
-            } else {
-                content.innerHTML = `
-                    <div style="padding: 2rem; text-align: center; color: #6b7280;">
-                        <p>No passages found coded with "${escapeHtml(codeName)}"</p>
-                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">This code has been created but not yet applied to any passages.</p>
-                    </div>
-                `;
-            }
-        } catch (error) {
+                            ${group.highlights.map(h => `
+                                <div style="margin-bottom: 0.75rem; padding: 0.75rem; background: white; border-radius: 4px; border-left: 3px solid ${h.codeColor || '#3b82f6'};">
+                                    <div style="line-height: 1.6; color: #374151;">
+                                        "${escapeHtml(h.text)}"
+                                    </div>
+                                </div>
+                            `).join('')}
+                        </div>
+                    `).join('')}
+                </div>
+            `;
+        } else {
             content.innerHTML = `
-                <div style="padding: 2rem; text-align: center; color: #dc2626;">
-                    <p>Unable to load code details. Please try again.</p>
+                <div style="padding: 2rem; text-align: center; color: #6b7280;">
+                    <p>No highlights found for code "${escapeHtml(codeName)}"</p>
+                    <p style="font-size: 0.875rem; margin-top: 0.5rem;">This code has been created but not yet applied to any passages.</p>
                 </div>
             `;
         }
-        
-        modal.style.display = 'flex';
     } catch (error) {
-        console.error('Error showing code details:', error);
-        alert('Unable to load code details.');
+        console.error('Error loading code details:', error);
+        content.innerHTML = `
+            <div style="padding: 2rem; text-align: center; color: #dc2626;">
+                <p>Unable to load code details.</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #6b7280;">Error: ${error.message || 'Unknown error'}</p>
+                <p style="font-size: 0.875rem; margin-top: 0.5rem; color: #6b7280;">Please check your connection and try again.</p>
+            </div>
+        `;
     }
 }
 
