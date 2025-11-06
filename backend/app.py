@@ -486,7 +486,8 @@ def reset_class_data():
         return jsonify({'error': 'Failed to reset data'}), 500
 
 if __name__ == '__main__':
-    print(f'Starting server on http://localhost:3000')
+    port = int(os.environ.get('PORT', 3000))
+    print(f'Starting server on port {port}')
     print(f'Database: {DB_PATH}')
-    app.run(host='0.0.0.0', port=3000, debug=True)
+    app.run(host='0.0.0.0', port=port, debug=False)
 

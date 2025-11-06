@@ -138,6 +138,9 @@ const CLASSES = [
     { id: 'class2', name: 'Class 2' }
 ];
 
+// API base URL - use Render URL in production, localhost for development
+const API_BASE = 'https://interview-coding.onrender.com';
+
 // State management
 let state = {
     studentName: '',
@@ -998,10 +1001,10 @@ async function showComparison() {
     
     try {
         // Fetch class data
-        const response = await fetch(`http://localhost:3000/api/class-data?classId=${encodeURIComponent(state.classId)}`);
+        const response = await fetch(`${API_BASE}/api/class-data?classId=${encodeURIComponent(state.classId)}`);
         const classData = await response.json();
         // Fetch passage stats
-        const pResponse = await fetch(`http://localhost:3000/api/passage-stats?classId=${encodeURIComponent(state.classId)}`);
+        const pResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(state.classId)}`);
         const passageStats = await pResponse.json();
 
         // Calculate passage-aware overlap
@@ -1122,7 +1125,7 @@ function applyHeatMap(classData) {
 async function loadInstructorData() {
     try {
         const currentClassId = document.getElementById('instructor-class-select')?.value || state.classId;
-        const response = await fetch(`http://localhost:3000/api/instructor-data?classId=${encodeURIComponent(currentClassId)}`);
+        const response = await fetch(`${API_BASE}/api/instructor-data?classId=${encodeURIComponent(currentClassId)}`);
         const data = await response.json();
         
         document.getElementById('instructor-students-count').textContent = data.students.length;
@@ -1189,7 +1192,7 @@ function exportMyCoding() {
 async function exportCSV() {
     try {
         const currentClassId = document.getElementById('instructor-class-select')?.value || state.classId;
-        const response = await fetch(`http://localhost:3000/api/export-csv?classId=${encodeURIComponent(currentClassId)}`);
+        const response = await fetch(`${API_BASE}/api/export-csv?classId=${encodeURIComponent(currentClassId)}`);
         const blob = await response.blob();
         const url = URL.createObjectURL(blob);
         const a = document.createElement('a');
@@ -1267,7 +1270,7 @@ function loadSavedData() {
 
 async function saveToServer() {
     try {
-        await fetch('http://localhost:3000/api/submit-coding', {
+        await fetch(`${API_BASE}/api/submit-coding`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json'
@@ -1294,7 +1297,7 @@ async function resetClassData() {
     }
     
     try {
-        const response = await fetch('http://localhost:3000/api/admin/reset-data', {
+        const response = await fetch(`${API_BASE}/api/admin/reset-data`, {
             method: 'POST',
             headers: {
                 'Content-Type': 'application/json',
