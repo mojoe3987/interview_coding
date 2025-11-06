@@ -1253,23 +1253,77 @@ async function loadInstructorData() {
         document.getElementById('instructor-avg-codes').textContent = 
             data.students.length > 0 ? Math.round(data.totalCodes / data.students.length) : 0;
         
-        // Render most common codes
+        // Render most common codes with color badges
         const codesList = document.getElementById('instructor-codes-list');
-        codesList.innerHTML = data.topCodes.map(code => `
-            <div class="instructor-list-item">
-                <strong>${escapeHtml(code.name)}</strong>
-                <span>${code.count} students</span>
-            </div>
-        `).join('');
+        if (data.topCodes && data.topCodes.length > 0) {
+            codesList.innerHTML = data.topCodes.map(code => `
+                <div class="instructor-list-item">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div style="width: 12px; height: 12px; border-radius: 2px; background-color: ${code.color || '#3b82f6'}; flex-shrink: 0;"></div>
+                        <strong>${escapeHtml(code.name)}</strong>
+                    </div>
+                    <span>${code.count} student${code.count !== 1 ? 's' : ''}</span>
+                </div>
+            `).join('');
+        } else {
+            codesList.innerHTML = '<p>No codes created yet.</p>';
+        }
         
-        // Render disagreements (simplified)
-        const disagreements = document.getElementById('instructor-disagreements');
-        disagreements.innerHTML = '<p>Feature coming soon - analyzing passage disagreements...</p>';
+        // Fetch and render most coded passages
+        try {
+            const passageResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(currentClassId)}`);
+            const passageData = await passageResponse.json();
+            renderInstructorTopPassages(passageData);
+        } catch (passageError) {
+            console.error('Error loading passage stats:', passageError);
+            document.getElementById('instructor-top-passages').innerHTML = '<p>Unable to load passage statistics.</p>';
+        }
         
     } catch (error) {
         console.error('Error loading instructor data:', error);
         alert('Unable to load instructor data. Make sure the backend is running.');
     }
+}
+
+function renderInstructorTopPassages(passageStats) {
+    const container = document.getElementById('instructor-top-passages');
+    if (!container) return;
+    
+    const passages = (passageStats.passages || []).slice(0, 10);
+    
+    if (passages.length === 0) {
+        container.innerHTML = '<p>No passage statistics available yet.</p>';
+        return;
+    }
+    
+    container.innerHTML = passages.map((passage, index) => `
+        <div class="instructor-passage-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="font-weight: 600; color: #1f2937;">
+                    ${escapeHtml(passage.interviewId || 'Unknown Interview')}
+                </div>
+                <div style="font-size: 0.875rem; color: #6b7280;">
+                    ${passage.students} student${passage.students !== 1 ? 's' : ''} coded this
+                </div>
+            </div>
+            <div style="margin-bottom: 0.75rem; line-height: 1.6; color: #374151; padding: 0.75rem; background: white; border-radius: 4px; font-style: italic;">
+                "${escapeHtml(passage.text.length > 250 ? passage.text.substring(0, 250) + '...' : passage.text)}"
+            </div>
+            <div style="margin-top: 0.75rem;">
+                <div style="font-size: 0.875rem; color: #6b7280; margin-bottom: 0.5rem; font-weight: 500;">Codes applied to this passage:</div>
+                <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                    ${passage.codes && passage.codes.length > 0 
+                        ? passage.codes.map(c => `
+                            <span style="display: inline-block; padding: 0.375rem 0.75rem; background: #e5e7eb; border-radius: 6px; font-size: 0.875rem; color: #374151; border-left: 3px solid #3b82f6;">
+                                ${escapeHtml(c.name)} <span style="color: #6b7280;">(${c.count})</span>
+                            </span>
+                        `).join('')
+                        : '<span style="font-size: 0.875rem; color: #6b7280;">No codes assigned</span>'
+                    }
+                </div>
+            </div>
+        </div>
+    `).join('');
 }
 
 function handleReset() {
