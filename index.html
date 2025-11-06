@@ -185,11 +185,24 @@
             <div class="instructor-sections">
                 <div class="instructor-section">
                     <h2>Most Common Themes</h2>
+                    <p class="section-hint">Click on a code to see all passages coded with it</p>
                     <div id="instructor-codes-list" class="instructor-list"></div>
                 </div>
                 <div class="instructor-section">
-                    <h2>High Disagreement Passages</h2>
-                    <div id="instructor-disagreements" class="instructor-list"></div>
+                    <h2>Most Coded Passages</h2>
+                    <p class="section-hint">Passages coded by the most students</p>
+                    <div id="instructor-top-passages" class="instructor-list"></div>
+                </div>
+            </div>
+            
+            <!-- Code Details Modal for Instructor -->
+            <div id="instructor-code-details-modal" class="modal" style="display: none;">
+                <div class="modal-content" style="max-width: 800px; max-height: 80vh; overflow-y: auto;">
+                    <h3 id="instructor-code-details-title">Code Details</h3>
+                    <div id="instructor-code-details-content"></div>
+                    <div class="modal-actions">
+                        <button id="close-instructor-code-details" class="btn-secondary">Close</button>
+                    </div>
                 </div>
             </div>
             <div class="instructor-actions">

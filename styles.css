@@ -795,6 +795,24 @@ body {
     font-size: 0.9rem;
 }
 
+.clickable-code-item {
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.clickable-code-item:hover {
+    background: var(--light-blue);
+    border-color: var(--secondary-blue);
+    transform: translateX(4px);
+}
+
+.section-hint {
+    font-size: 0.875rem;
+    color: var(--text-gray);
+    margin-bottom: 0.75rem;
+    font-style: italic;
+}
+
 .instructor-actions {
     display: flex;
     gap: 1rem;

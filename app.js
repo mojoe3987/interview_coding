@@ -291,6 +291,18 @@ function setupEventListeners() {
     document.getElementById('export-csv-btn').addEventListener('click', exportCSV);
     document.getElementById('reset-class-btn').addEventListener('click', resetClassData);
     
+    // Instructor code details modal
+    document.getElementById('close-instructor-code-details').addEventListener('click', () => {
+        document.getElementById('instructor-code-details-modal').style.display = 'none';
+    });
+    
+    // Close modal when clicking outside
+    document.getElementById('instructor-code-details-modal').addEventListener('click', (e) => {
+        if (e.target.id === 'instructor-code-details-modal') {
+            e.target.style.display = 'none';
+        }
+    });
+    
     // Text selection
     document.addEventListener('mouseup', handleTextSelection);
 }
@@ -1253,22 +1265,154 @@ async function loadInstructorData() {
         document.getElementById('instructor-avg-codes').textContent = 
             data.students.length > 0 ? Math.round(data.totalCodes / data.students.length) : 0;
         
-        // Render most common codes
+        // Render most common codes (clickable)
         const codesList = document.getElementById('instructor-codes-list');
-        codesList.innerHTML = data.topCodes.map(code => `
-            <div class="instructor-list-item">
-                <strong>${escapeHtml(code.name)}</strong>
-                <span>${code.count} students</span>
-            </div>
-        `).join('');
+        if (data.topCodes && data.topCodes.length > 0) {
+            codesList.innerHTML = data.topCodes.map(code => `
+                <div class="instructor-list-item clickable-code-item" onclick="showInstructorCodeDetails('${escapeHtml(code.name)}', '${currentClassId}')">
+                    <div style="display: flex; align-items: center; gap: 0.5rem;">
+                        <div class="code-color-badge" style="background-color: ${code.color || '#3b82f6'}; width: 12px; height: 12px; border-radius: 2px; flex-shrink: 0;"></div>
+                        <strong>${escapeHtml(code.name)}</strong>
+                    </div>
+                    <span>${code.count} students</span>
+                </div>
+            `).join('');
+        } else {
+            codesList.innerHTML = '<p>No codes created yet.</p>';
+        }
         
-        // Render disagreements (simplified)
-        const disagreements = document.getElementById('instructor-disagreements');
-        disagreements.innerHTML = '<p>Feature coming soon - analyzing passage disagreements...</p>';
+        // Fetch and render most coded passages
+        try {
+            const passageResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(currentClassId)}`);
+            const passageData = await passageResponse.json();
+            renderInstructorTopPassages(passageData);
+        } catch (passageError) {
+            console.error('Error loading passage stats:', passageError);
+            document.getElementById('instructor-top-passages').innerHTML = '<p>Unable to load passage statistics.</p>';
+        }
         
     } catch (error) {
         console.error('Error loading instructor data:', error);
         alert('Unable to load instructor data. Make sure the backend is running.');
+    }
+}
+
+function renderInstructorTopPassages(passageStats) {
+    const container = document.getElementById('instructor-top-passages');
+    if (!container) return;
+    
+    const passages = (passageStats.passages || []).slice(0, 10);
+    
+    if (passages.length === 0) {
+        container.innerHTML = '<p>No passage statistics available yet.</p>';
+        return;
+    }
+    
+    const maxStudents = Math.max(...passages.map(p => p.students), 1);
+    
+    container.innerHTML = passages.map((passage, index) => `
+        <div class="instructor-passage-item" style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                <div style="font-weight: 600; color: #1f2937;">
+                    ${escapeHtml(passage.interviewId || 'Unknown Interview')}
+                </div>
+                <div style="font-size: 0.875rem; color: #6b7280;">
+                    ${passage.students} student${passage.students !== 1 ? 's' : ''}
+                </div>
+            </div>
+            <div style="margin-bottom: 0.75rem; line-height: 1.6; color: #374151;">
+                "${escapeHtml(passage.text.length > 200 ? passage.text.substring(0, 200) + '...' : passage.text)}"
+            </div>
+            <div style="display: flex; flex-wrap: wrap; gap: 0.5rem;">
+                ${passage.codes && passage.codes.length > 0 
+                    ? passage.codes.map(c => `
+                        <span style="display: inline-block; padding: 0.25rem 0.5rem; background: #e5e7eb; border-radius: 4px; font-size: 0.875rem; color: #374151;">
+                            ${escapeHtml(c.name)} (${c.count})
+                        </span>
+                    `).join('')
+                    : '<span style="font-size: 0.875rem; color: #6b7280;">No codes assigned</span>'
+                }
+            </div>
+        </div>
+    `).join('');
+}
+
+// Make function globally accessible for onclick handlers
+window.showInstructorCodeDetails = async function(codeName, classId) {
+    try {
+        // Fetch all highlights for this code
+        const response = await fetch(`${API_BASE}/api/instructor-data?classId=${encodeURIComponent(classId)}`);
+        const data = await response.json();
+        
+        // Find all highlights with this code name
+        // We need to get the full data including highlights
+        const codeHighlights = [];
+        
+        // The API might not return highlights directly, so we'll need to fetch them
+        // For now, let's show what we can from the class data
+        const modal = document.getElementById('instructor-code-details-modal');
+        const title = document.getElementById('instructor-code-details-title');
+        const content = document.getElementById('instructor-code-details-content');
+        
+        title.textContent = `Code: ${escapeHtml(codeName)}`;
+        
+        // Try to get passage stats filtered by code
+        try {
+            const passageResponse = await fetch(`${API_BASE}/api/passage-stats?classId=${encodeURIComponent(classId)}`);
+            const passageData = await passageResponse.json();
+            
+            // Filter passages that include this code
+            const relevantPassages = (passageData.passages || []).filter(p => 
+                p.codes && p.codes.some(c => c.name.toLowerCase() === codeName.toLowerCase())
+            );
+            
+            if (relevantPassages.length > 0) {
+                content.innerHTML = `
+                    <div style="margin-bottom: 1rem; padding: 0.75rem; background: #eff6ff; border-radius: 6px; color: #1e40af;">
+                        <strong>Found ${relevantPassages.length} passage${relevantPassages.length !== 1 ? 's' : ''} coded with "${escapeHtml(codeName)}"</strong>
+                    </div>
+                    <div style="max-height: 60vh; overflow-y: auto;">
+                        ${relevantPassages.map((passage, index) => `
+                            <div style="margin-bottom: 1.5rem; padding: 1rem; background: #f9fafb; border-radius: 8px; border-left: 4px solid #3b82f6;">
+                                <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 0.5rem;">
+                                    <div style="font-weight: 600; color: #1f2937;">
+                                        ${escapeHtml(passage.interviewId || 'Unknown Interview')}
+                                    </div>
+                                    <div style="font-size: 0.875rem; color: #6b7280;">
+                                        ${passage.students} student${passage.students !== 1 ? 's' : ''} coded this
+                                    </div>
+                                </div>
+                                <div style="margin-bottom: 0.75rem; line-height: 1.6; color: #374151; padding: 0.75rem; background: white; border-radius: 4px;">
+                                    "${escapeHtml(passage.text)}"
+                                </div>
+                                <div style="font-size: 0.875rem; color: #6b7280;">
+                                    Other codes on this passage: 
+                                    ${passage.codes.filter(c => c.name.toLowerCase() !== codeName.toLowerCase()).map(c => escapeHtml(c.name)).join(', ') || 'None'}
+                                </div>
+                            </div>
+                        `).join('')}
+                    </div>
+                `;
+            } else {
+                content.innerHTML = `
+                    <div style="padding: 2rem; text-align: center; color: #6b7280;">
+                        <p>No passages found coded with "${escapeHtml(codeName)}"</p>
+                        <p style="font-size: 0.875rem; margin-top: 0.5rem;">This code has been created but not yet applied to any passages.</p>
+                    </div>
+                `;
+            }
+        } catch (error) {
+            content.innerHTML = `
+                <div style="padding: 2rem; text-align: center; color: #dc2626;">
+                    <p>Unable to load code details. Please try again.</p>
+                </div>
+            `;
+        }
+        
+        modal.style.display = 'flex';
+    } catch (error) {
+        console.error('Error showing code details:', error);
+        alert('Unable to load code details.');
     }
 }
 
