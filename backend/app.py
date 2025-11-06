@@ -255,37 +255,33 @@ def get_instructor_data():
         conn = get_db()
         cursor = conn.cursor()
         
-        # Get all students in this class (same approach as CSV export)
+        # Get all students in this class - same as CSV export
         cursor.execute('SELECT DISTINCT name FROM students WHERE class_id = ?', (class_id,))
         students = [row[0] for row in cursor.fetchall()]
         
-        # Get total codes for this class - use same JOIN approach as CSV to ensure consistency
-        # Also handle cases where class_id might be NULL (old data)
+        # Get total codes - use EXACT same pattern as CSV export (LEFT JOIN from students)
         cursor.execute('''
             SELECT COUNT(DISTINCT c.id) as count
-            FROM codes c
-            WHERE c.class_id = ? OR (c.class_id IS NULL AND EXISTS (
-                SELECT 1 FROM students s WHERE s.name = c.student_name AND s.class_id = ?
-            ))
-        ''', (class_id, class_id))
+            FROM students s
+            LEFT JOIN codes c ON s.name = c.student_name AND s.class_id = c.class_id
+            WHERE s.class_id = ? AND c.id IS NOT NULL
+        ''', (class_id,))
         total_codes_result = cursor.fetchone()
         total_codes = total_codes_result['count'] if total_codes_result else 0
         
-        # Get top codes for this class - use same JOIN approach
-        # Also handle cases where class_id might be NULL (old data)
+        # Get top codes - use EXACT same pattern as CSV export (LEFT JOIN from students)
         cursor.execute('''
             SELECT 
                 c.code_name as name,
                 c.code_color as color,
                 COUNT(DISTINCT c.student_name) as count
-            FROM codes c
-            WHERE c.class_id = ? OR (c.class_id IS NULL AND EXISTS (
-                SELECT 1 FROM students s WHERE s.name = c.student_name AND s.class_id = ?
-            ))
+            FROM students s
+            LEFT JOIN codes c ON s.name = c.student_name AND s.class_id = c.class_id
+            WHERE s.class_id = ? AND c.id IS NOT NULL
             GROUP BY c.code_name, c.code_color
             ORDER BY count DESC
             LIMIT 20
-        ''', (class_id, class_id))
+        ''', (class_id,))
         
         top_codes = []
         for row in cursor.fetchall():
