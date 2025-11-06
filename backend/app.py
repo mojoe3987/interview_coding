@@ -255,26 +255,37 @@ def get_instructor_data():
         conn = get_db()
         cursor = conn.cursor()
         
-        # Get all students in this class
+        # Get all students in this class (same approach as CSV export)
         cursor.execute('SELECT DISTINCT name FROM students WHERE class_id = ?', (class_id,))
         students = [row[0] for row in cursor.fetchall()]
         
-        # Get total codes for this class
-        cursor.execute('SELECT COUNT(*) as count FROM codes WHERE class_id = ?', (class_id,))
-        total_codes = cursor.fetchone()['count']
+        # Get total codes for this class - use same JOIN approach as CSV to ensure consistency
+        # Also handle cases where class_id might be NULL (old data)
+        cursor.execute('''
+            SELECT COUNT(DISTINCT c.id) as count
+            FROM codes c
+            WHERE c.class_id = ? OR (c.class_id IS NULL AND EXISTS (
+                SELECT 1 FROM students s WHERE s.name = c.student_name AND s.class_id = ?
+            ))
+        ''', (class_id, class_id))
+        total_codes_result = cursor.fetchone()
+        total_codes = total_codes_result['count'] if total_codes_result else 0
         
-        # Get top codes for this class
+        # Get top codes for this class - use same JOIN approach
+        # Also handle cases where class_id might be NULL (old data)
         cursor.execute('''
             SELECT 
-                code_name as name,
-                code_color as color,
-                COUNT(DISTINCT student_name) as count
-            FROM codes
-            WHERE class_id = ?
-            GROUP BY code_name, code_color
+                c.code_name as name,
+                c.code_color as color,
+                COUNT(DISTINCT c.student_name) as count
+            FROM codes c
+            WHERE c.class_id = ? OR (c.class_id IS NULL AND EXISTS (
+                SELECT 1 FROM students s WHERE s.name = c.student_name AND s.class_id = ?
+            ))
+            GROUP BY c.code_name, c.code_color
             ORDER BY count DESC
             LIMIT 20
-        ''', (class_id,))
+        ''', (class_id, class_id))
         
         top_codes = []
         for row in cursor.fetchall():
@@ -294,6 +305,8 @@ def get_instructor_data():
     
     except Exception as e:
         print(f'Error fetching instructor data: {e}')
+        import traceback
+        traceback.print_exc()
         return jsonify({'error': 'Failed to fetch instructor data'}), 500
 
 @app.route('/api/code-highlights', methods=['GET'])
