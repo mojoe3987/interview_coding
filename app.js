@@ -4,130 +4,14 @@ const INTERVIEWS = [
         id: 'interview1',
         title: 'Interview 1: Alex on Luxury',
         content: `
-<p><strong>Interviewer:</strong> Alex, how would you describe your relationship with luxury?</p>
-
-<p><strong>Alex:</strong> I’d say it’s part of my lifestyle and identity. Luxury, for me, represents achievement — tangible proof of the effort I’ve put in. I didn’t grow up with much, so owning luxury items feels like closing a personal gap. When I look at my watch or my car, it’s not just an object; it’s a reminder that I’ve built something from scratch.</p>
-
-<p><strong>Interviewer:</strong> What draws you to luxury products in the first place?</p>
-
-<p><strong>Alex:</strong> It’s a mix of admiration and ambition. I associate luxury with excellence — people who strive for the best. I want to surround myself with that mindset. There’s also a psychological element: luxury motivates me to maintain a certain standard. When I put on a tailored suit or step into a high-end hotel, I feel more focused, more powerful — like I’m embodying the success I’m aiming for.</p>
-
-<p><strong>Interviewer:</strong> Can you tell me about your first luxury purchase and what it meant to you?</p>
-
-<p><strong>Alex:</strong> My first major one was a Tag Heuer watch after I closed a big deal early in my career. I remember standing at the counter thinking, “This is my reward.” It marked a shift — from aspiring to belonging. Every time I wear it, it still gives me that same feeling of validation, like a private signal that I’m doing well.</p>
-
-<p><strong>Interviewer:</strong> How does luxury fit into your everyday life?</p>
-
-<p><strong>Alex:</strong> It’s become part of how I present myself — to clients, colleagues, even strangers. It’s not about arrogance; it’s about signaling reliability, professionalism, competence. I think in business, people subconsciously read those cues. When you dress sharply and carry quality things, you project seriousness. And yes, I enjoy that perception.</p>
-
-<p><strong>Interviewer:</strong> Do you ever think about how others perceive your luxury choices?</p>
-
-<p><strong>Alex:</strong> Constantly. I’d be lying if I said I didn’t. The image you project affects how people treat you. In my field, you’re often judged before you even speak. Luxury helps shape that first impression. It’s not just personal taste; it’s strategic communication.</p>
-
-<p><strong>Interviewer:</strong> How do luxury products make you feel emotionally?</p>
-
-<p><strong>Alex:</strong> They make me feel secure — like I’m on solid ground. I think there’s a psychological reassurance that comes with having symbols of success. When I wear something expensive, it gives me confidence to perform better. It’s a bit like armor, in a way.</p>
-
-<p><strong>Interviewer:</strong> Do you feel competition with others who also buy luxury?</p>
-
-<p><strong>Alex:</strong> Yes, it’s there. Especially in finance, people subtly compete through lifestyle — watches, cars, vacations. It’s not always explicit, but you notice. It can be motivating, but also exhausting. You start chasing the next thing before you’ve even enjoyed the last one.</p>
-
-<p><strong>Interviewer:</strong> Have you ever felt conflicted about your spending on luxury?</p>
-
-<p><strong>Alex:</strong> Occasionally. When I think rationally, I know a watch doesn’t change who I am. But emotionally, it does something for me. It validates my progress. I sometimes wonder if I’m buying for myself or for how I want to be seen. Probably both.</p>
-
-<p><strong>Interviewer:</strong> How do you justify these purchases to yourself?</p>
-
-<p><strong>Alex:</strong> I see them as rewards. I work extremely hard, long hours, so buying something nice feels like balance. It’s my way of acknowledging effort. Also, quality lasts — I prefer investing in fewer, better things that I can keep for years.</p>
-
-<p><strong>Interviewer:</strong> What happens emotionally when you can’t buy something you want?</p>
-
-<p><strong>Alex:</strong> Frustration, honestly. It feels like limitation, like being back where I started. I associate luxury with freedom — the ability to choose without constraints. So not being able to afford something feels symbolic, like losing ground.</p>
-
-<p><strong>Interviewer:</strong> Do you talk about your luxury purchases with others?</p>
-
-<p><strong>Alex:</strong> Yes, within certain circles. Among colleagues, it’s almost expected — you share experiences, brands, travel destinations. But I avoid it with friends outside work; it can sound pretentious. Context matters.</p>
-
-<p><strong>Interviewer:</strong> Has your relationship with luxury changed over time?</p>
-
-<p><strong>Alex:</strong> Definitely. Early on, it was pure excitement — chasing labels, status, validation. Now it’s more about quality and legacy. I think about watches I’ll pass down or items that represent long-term achievement. It’s matured, but the need for recognition is still there.</p>
-
-<p><strong>Interviewer:</strong> Do you think luxury influences your sense of self-worth?</p>
-
-<p><strong>Alex:</strong> Yes, it does. I try to separate the two, but success and self-worth are deeply connected for me. When I’m doing well and can afford luxury, I feel in control. When I can’t, I feel insecure. It’s not healthy, but it’s honest.</p>
-
-<p><strong>Interviewer:</strong> How do you think others perceive people who buy luxury?</p>
-
-<p><strong>Alex:</strong> Mixed, I’d say. Some admire it; others see it as shallow. But perception doesn’t bother me much anymore. People project their own insecurities. For me, luxury is part motivation, part identity — it keeps me striving.</p>
-
-<p><strong>Interviewer:</strong> Finally, what does “true luxury” mean to you at this stage of your life?</p>
-
-<p><strong>Alex:</strong> True luxury is freedom — the ability to choose what you want, when you want, without worrying about it. It’s peace of mind, but expressed materially. It’s not just having money; it’s feeling that you’ve earned the right to enjoy it.</p>
+<p><strong>Interviewer:</strong> So, Alex, if you had to describe your relationship with luxury… what comes to mind first?</p> <p><strong>Alex:</strong> Hmm… probably *complicated*. [laughs] I mean, I like nice things, I'm not gonna pretend otherwise. It's part motivation, part—validation, maybe? I didn't grow up with much, so when I wear something expensive now, it's like proof that… yeah, I made it somewhere. Even if it's just me reminding myself of that.</p> <p><strong>Interviewer:</strong> So it's more emotional than practical?</p> <p><strong>Alex:</strong> Yeah, yeah, definitely emotional. I tell myself it's about quality, but honestly? It's about how it makes me *feel*. Like, if I walk into a meeting in a good suit, I feel sharper, more—legit. It's kind of armor, in a way. And people notice. Or at least I think they do. [smiles] Maybe it's all in my head.</p> <p><strong>Interviewer:</strong> What kind of situations make you want to buy something new?</p> <p><strong>Alex:</strong> Ah… when I've done something big, like closing a deal, yeah. But also when I'm stressed or just bored. [laughs] It's stupid, but sometimes scrolling through watches or sneakers feels like a break. I'll say I'm "researching investment pieces," but… it's probably just dopamine shopping. I've returned more stuff than I'd admit.</p> <p><strong>Interviewer:</strong> Do you remember your first luxury purchase?</p> <p><strong>Alex:</strong> Oh yeah. A Tag Heuer. I'd just gotten promoted. I wanted something to *show* it, you know? My dad rolled his eyes—said I could've used the money for savings. But every time I look at that watch, I think, "No, this is what savings *became*." [pauses] Maybe that's rationalizing, I don't know.</p> <p><strong>Interviewer:</strong> How do you think others read your choices?</p> <p><strong>Alex:</strong> Depends who we're talking about. In finance, everyone notices. There's this… unspoken ranking. Like, oh, he's got the new Omega, okay. We don't talk about it, but we all know. Outside work, though, I tone it down. My brother once called me "a walking ad," so—yeah, learned that lesson. [laughs]</p> <p><strong>Interviewer:</strong> Ever regret a purchase?</p> <p><strong>Alex:</strong> Oh yeah. There was this leather jacket—looked great online, but when I wore it, I just felt… wrong. Like I was trying to be someone else. I told myself it was the fit, but really it was just… not *me*. Which is weird, because I thought luxury was supposed to be the most "me" version of myself.</p> <p><strong>Interviewer:</strong> Has your relationship with luxury changed over time?</p> <p><strong>Alex:</strong> I think so. I tell myself I'm more about subtlety now. [smirks] Less "look at me." But then a limited edition drops and, well… I click fast. [laughs] So maybe I'm just better at justifying it. I say "investment piece," but it's usually a rush purchase that I later convince myself was strategic.</p> <p><strong>Interviewer:</strong> And if you couldn't buy luxury anymore?</p> <p><strong>Alex:</strong> Huh… honestly, that'd sting. Not because of the stuff itself, but because of what it represents. Like… losing proof, or freedom. On good days, I don't need it. On bad days, I kind of do. [shrugs] I guess true luxury would be not *needing* luxury.</p>
         `
     },
     {
         id: 'interview2',
         title: 'Interview 2: Clara on Luxury',
         content: `
-<p><strong>Interviewer:</strong> Clara, can you tell me a bit about what luxury means to you personally?</p>
-
-<p><strong>Clara:</strong> To me, luxury isn’t really about money or exclusivity — it’s about emotion. It’s the feeling of beauty, harmony, and effort behind an object. When I touch something that’s been crafted with care, I feel that energy. It’s like having a small piece of art that you can live with every day. I guess I see luxury as a quiet form of self-expression — a way of surrounding myself with things that resonate with my sense of who I am and who I want to be.</p>
-
-<p><strong>Interviewer:</strong> Can you remember a specific experience that shaped how you relate to luxury?</p>
-
-<p><strong>Clara:</strong> Yes, absolutely. When I got my first job after studying design, I saved for months to buy a Céline bag. It wasn’t about showing it off — it was symbolic. I had earned something through my own creativity. I remember unboxing it and admiring the simplicity of the design; it made me feel grounded and capable. That purchase wasn’t about owning something expensive — it was about affirming my independence and my values as a designer who appreciates craftsmanship.</p>
-
-<p><strong>Interviewer:</strong> What usually motivates you to buy luxury items today?</p>
-
-<p><strong>Clara:</strong> It’s about connection. I don’t buy often, but when I do, it’s because I’ve developed an attachment to a piece. I can admire a collection for months before deciding. I think about how it fits my aesthetic and my life. There’s an intimacy in choosing something that feels like it belongs to your story. I’m drawn to timelessness — things that age beautifully. I like that sense of permanence in a world that changes so fast.</p>
-
-<p><strong>Interviewer:</strong> How do these purchases make you feel emotionally?</p>
-
-<p><strong>Clara:</strong> They make me feel centered and confident. Sometimes I feel like I’m wearing a piece of calm. It might sound odd, but when I wear a silk scarf or spritz a particular perfume, it’s almost like I’m connecting with a quieter version of myself — one that isn’t rushing, but appreciating. It’s soothing.</p>
-
-<p><strong>Interviewer:</strong> In what ways do luxury products connect to your sense of identity?</p>
-
-<p><strong>Clara:</strong> They’re almost like visual chapters of my life. Each piece marks a period — moving to a new city, starting a relationship, overcoming something. I think I use them to construct a kind of narrative about who I am becoming. I don’t buy to impress anyone, but to feel authentic and aligned with my values. It’s a language — a very personal one.</p>
-
-<p><strong>Interviewer:</strong> Do you ever feel tension or conflict when buying luxury?</p>
-
-<p><strong>Clara:</strong> Yes, sometimes. I’m very aware of environmental issues and fast fashion, so I’m careful. I do feel guilty if I think something might be wasteful or unethical. That’s why I’ve moved toward smaller brands that are transparent about their processes. For me, part of true luxury is responsibility.</p>
-
-<p><strong>Interviewer:</strong> How do others in your life react to your luxury purchases?</p>
-
-<p><strong>Clara:</strong> My close friends get it. They know I see it through an artistic lens. But others sometimes assume it’s about status, which can feel frustrating. I think there’s still a stereotype that people who buy luxury are superficial, but that misses the emotional and aesthetic dimension entirely.</p>
-
-<p><strong>Interviewer:</strong> Do you ever use luxury to express emotions or moods?</p>
-
-<p><strong>Clara:</strong> Definitely. For instance, when I’m feeling low, I’ll wear something that feels comforting and elegant — like a cashmere sweater or my favorite scent. It’s almost therapeutic. I use these pieces as emotional anchors, in a way. They help me reconnect with myself.</p>
-
-<p><strong>Interviewer:</strong> Would you say your relationship with luxury has changed over time?</p>
-
-<p><strong>Clara:</strong> It’s evolved. In my early twenties, I was fascinated by the idea of design perfection. Now it’s more about meaning and emotional connection. I’ve become more selective. I prefer slow choices that last. Luxury has become less external and more internal for me.</p>
-
-<p><strong>Interviewer:</strong> Do you ever feel influenced by trends or social media?</p>
-
-<p><strong>Clara:</strong> Less and less. I follow fashion accounts because I love visual inspiration, but I’ve trained myself to separate appreciation from consumption. I might admire a new design, but I’ll only buy something if it truly fits my own aesthetic language.</p>
-
-<p><strong>Interviewer:</strong> How do you distinguish between what feels “authentic luxury” and what doesn’t?</p>
-
-<p><strong>Clara:</strong> Authentic luxury has soul. You can sense it in the details, in how it’s made, in the story behind it. It’s not about logos or hype — it’s about integrity. I’ve seen pieces that cost a fortune but feel empty. I’d rather have something understated that tells a story.</p>
-
-<p><strong>Interviewer:</strong> Can you describe how you feel in moments when you use or wear your luxury items?</p>
-
-<p><strong>Clara:</strong> Calm. Composed. I feel like myself. It’s not excitement — it’s quiet satisfaction. I like how certain textures or scents can shift my energy. It’s like mindfulness in material form.</p>
-
-<p><strong>Interviewer:</strong> What role does luxury play in your everyday life?</p>
-
-<p><strong>Clara:</strong> It’s not constant, but it’s present in small rituals — like the perfume I use every morning, or the notebook I carry. They’re reminders to live intentionally, to slow down. Luxury for me is about quality of experience, not quantity of possessions.</p>
-
-<p><strong>Interviewer:</strong> What would happen if you could no longer buy luxury?</p>
-
-<p><strong>Clara:</strong> I’d miss the sensory part — the textures, the craftsmanship — but I think I’d still find ways to express beauty, maybe through art or secondhand pieces. It’s the emotional connection I’d want to keep, not the price tag.</p>
-
-<p><strong>Interviewer:</strong> Finally, how would you sum up what luxury truly means to you?</p>
-
-<p><strong>Clara:</strong> For me, true luxury is emotional resonance. It’s beauty that lasts, that speaks to your inner life. It’s not about owning something exclusive — it’s about feeling something deeply.</p>
+<p><strong>Interviewer:</strong> Clara, when you think of "luxury," what do you picture—or feel?</p> <p><strong>Clara:</strong> Mmm… it's not one thing. I guess—quiet. Calm. I know that sounds weird. [laughs softly] I like things that are *considered*. Not loud. When something's beautifully made, I feel… held by it, maybe? Like someone paid attention—and I want to live with that kind of attention.</p> <p><strong>Interviewer:</strong> Has that always been your view?</p> <p><strong>Clara:</strong> No, not really. In my early twenties, I think I was performing "taste." [smiles] My first job, first paychecks, I wanted to *look* like a designer. I saved up for this Céline bag—it was minimal, elegant. But if I'm honest, part of me wanted colleagues to notice it. Like, *Oh, she knows her stuff.* I told myself it was about craftsmanship. Maybe it was half and half.</p> <p><strong>Interviewer:</strong> What makes you decide to actually buy something now?</p> <p><strong>Clara:</strong> I wait. I save pictures, revisit them months later. If I still feel drawn to it, that's usually a sign. But I also… I get caught in loops. Like, I'll convince myself I'm being rational, but I'm really building a story to justify it. [laughs] "It's timeless," "It's sustainable"—I've said all that. Sometimes it's true; sometimes it's just me trying to feel okay about wanting it.</p> <p><strong>Interviewer:</strong> Do you ever feel conflicted when buying luxury?</p> <p><strong>Clara:</strong> Constantly. I care about sustainability, so I try to buy less, but then the guilt makes me choose *more expensive* things to make it feel justified. [pauses] Which is kind of the opposite of simple, isn't it? I've also resold items that didn't fit my life anymore. I call it curating, but sometimes it's just erasing the evidence. [smiles wryly]</p> <p><strong>Interviewer:</strong> How do people around you respond to your taste?</p> <p><strong>Clara:</strong> Depends. My design friends get it. My family… not so much. My mum once said, "Oh, that's lovely, dear—how much did that *cost*?" [laughs] So I wear simpler things when I visit. It's easier. But sometimes I feel like I'm hiding a part of myself. Like, why can't I just like beautiful things without it being a statement?</p> <p><strong>Interviewer:</strong> Do trends affect you at all?</p> <p><strong>Clara:</strong> Less than before, but still a bit. I scroll fashion accounts "just for inspiration," and then suddenly I'm calculating whether I can afford something. It's like I want to be above it but I'm not. [laughs] I can tell myself stories about integrity all day, but sometimes I just want the thrill of *new*.</p> <p><strong>Interviewer:</strong> How would you define "true luxury" now?</p> <p><strong>Clara:</strong> Attention. The time it takes to make something properly—and the time to notice it. Maybe also… space. Like mental space. I guess luxury is anything that lets me slow down and feel present. But, yeah, it's ironic—I talk about presence and still check resale sites at midnight. [laughs] Work in progress.</p>
         `
     }
 ];
